@@ -1,0 +1,2 @@
+include ':app', ':fp_haskell'
+rootProject.name='kotlin_functional_programming'
