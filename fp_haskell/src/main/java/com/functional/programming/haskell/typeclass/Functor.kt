@@ -1,6 +1,6 @@
 package com.functional.programming.haskell.typeclass
 
-interface Functor<out T> {
+interface Functor<FT, FR> {
 
-    fun <R> fmap(transform: (T) -> R): Functor<T>
+    fun <T, R> FT.fmap(f: (T) -> R): FR
 }
