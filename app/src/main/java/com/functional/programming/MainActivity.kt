@@ -3,10 +3,12 @@ package com.functional.programming
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.functional.programming.haskell.data.Maybe
-import com.functional.programming.haskell.data.eq
-import com.functional.programming.haskell.data.functor
-import com.functional.programming.haskell.data.monad
+import com.functional.programming.haskell.core.Maybe
+import com.functional.programming.haskell.core.binding
+import com.functional.programming.haskell.core.eq
+import com.functional.programming.haskell.core.eqv
+import com.functional.programming.haskell.core.fmap
+import com.functional.programming.haskell.core.neqv
 import com.functional.programming.ui.main.MainFragment
 
 class MainActivity : AppCompatActivity() {
@@ -34,56 +36,41 @@ class MainActivity : AppCompatActivity() {
         Maybe.Nothing
 
     fun testMonad() {
-        val result = Maybe.monad<Int, Int>().run {
-            Maybe.Just(20) binding ::half binding ::half binding ::half
-        }
+        var result = Maybe.Just(20) binding ::half binding ::half binding ::half
+        Log.d(TAG, "testMonad #1 : $result")
 
-        Log.d(TAG, "testMonad : $result")
+        result = Maybe.Just(20) binding2 ::half binding2 ::half
+        Log.d(TAG, "testMonad #2 : $result")
+
+        result = Maybe.Just(20) binding2 ::half
+        Log.d(TAG, "testMonad #3 : $result")
     }
 
     fun testFunctor() {
-        val result = Maybe.functor<Int, Int>().run {
-            Maybe.Just(20).fmap { it + 1 }
-        }
-
-        Log.d(TAG, "testFunctor #1 : $result")
-
-        val result = Maybe.functor<Int, Boolean>().run {
-            Maybe.Just(20).fmap({ it + 1 }).fmap({ it > 20 })
-        }
-
+        val result = Maybe.Just(20) fmap { it + 1 } fmap { it > 20 }
         Log.d(TAG, "testFunctor #1 : $result")
     }
 
     fun testEq() {
-        var result = Maybe.eq<Int>().run {
-            Maybe.Just(20).eqv(Maybe.Just(10))
-        }
-
+        var result = Maybe.Just(20).eqv(Int.eq(), Maybe.Just(10))
         Log.d(TAG, "testEq #1 : $result")
 
-        result = Maybe.eq<Int>().run {
-            Maybe.Just(20).eqv(Maybe.Just(20))
-        }
-
+        result = Maybe.Just(20).eqv(Int.eq(), Maybe.Just(20))
         Log.d(TAG, "testEq #2 : $result")
 
-        result = Maybe.eq<Int>().run {
-            Maybe.Just(20).eqv(Maybe.Nothing)
-        }
-
+        result = Maybe.Just(20).eqv(Int.eq(), Maybe.Nothing)
         Log.d(TAG, "testEq #3 : $result")
 
-        result = Maybe.eq<Int>().run {
-            Maybe.Nothing.eqv(Maybe.Just(20))
-        }
-
+        result = Maybe.Nothing.eqv(Int.eq(), Maybe.Just(20))
         Log.d(TAG, "testEq #4 : $result")
 
-        result = Maybe.eq<Int>().run {
-            Maybe.Nothing.eqv(Maybe.Nothing)
-        }
-
+        result = Maybe.Nothing.eqv(Int.eq(), Maybe.Nothing)
         Log.d(TAG, "testEq #5 : $result")
+
+        result = Maybe.Nothing.neqv(Int.eq(), Maybe.Nothing)
+        Log.d(TAG, "testEq #6 : $result")
+
+        result = Maybe.Nothing.neqv(Int.eq(), Maybe.Just(20))
+        Log.d(TAG, "testEq #7 : $result")
     }
 }
