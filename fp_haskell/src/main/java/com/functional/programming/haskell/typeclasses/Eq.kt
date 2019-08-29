@@ -1,4 +1,4 @@
-package com.functional.programming.haskell.typeclass
+package com.functional.programming.haskell.typeclasses
 
 interface Eq<T> {
     fun T.eqv(b: T): Boolean
