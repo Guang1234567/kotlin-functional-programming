@@ -13,10 +13,8 @@ class ForMaybe private constructor() {
 
 typealias MaybeOf<A> = Kind<ForMaybe, A>
 
-/**
- * 将 Kind 变回 Maybe
- */
-inline fun <A> MaybeOf<A>.fix(): Maybe<A> =
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+private inline fun <A> MaybeOf<A>.fix(): Maybe<A> =
     this as Maybe<A>
 
 sealed class Maybe<out A> : MaybeOf<A>, Monad2<ForMaybe, A> {
@@ -46,6 +44,7 @@ sealed class Maybe<out A> : MaybeOf<A>, Monad2<ForMaybe, A> {
         is Just -> f(value).fix()
     }
 }
+
 
 //------------------------------
 // Eq
@@ -80,20 +79,6 @@ fun <A> Maybe<A>.neqv(valueEq: Eq<A>, b: Maybe<A>): Boolean = Maybe.eq(valueEq).
     this@neqv.neqv(b)
 }
 
-//------------------------------
-// Monad
-//------------------------------
-
-interface MaybeMonad : Monad<ForMaybe> {
-    override fun <A, B> MaybeOf<A>.binding(f: (A) -> MaybeOf<B>): Maybe<B> = fix().binding(f)
-}
-
-fun Maybe.Companion.monad(): MaybeMonad =
-    object : MaybeMonad {}
-
-infix fun <A, B> MaybeOf<A>.binding(f: Function1<A, MaybeOf<B>>): Maybe<B> = Maybe.monad().run {
-    this@binding.binding(f)
-}
 
 //------------------------------
 // Functor
@@ -108,4 +93,21 @@ fun Maybe.Companion.functor(): MaybeFunctor =
 
 infix fun <A, B> MaybeOf<A>.fmap(f: (A) -> B): Maybe<B> = Maybe.functor().run {
     this@fmap.fmap(f)
+}
+
+infix fun <A, B> ((A) -> B).fmapFlip(maybe: MaybeOf<A>): Maybe<B> = maybe.fmap(this)
+
+//------------------------------
+// Monad
+//------------------------------
+
+interface MaybeMonad : Monad<ForMaybe> {
+    override fun <A, B> MaybeOf<A>.binding(f: (A) -> MaybeOf<B>): Maybe<B> = fix().binding(f)
+}
+
+fun Maybe.Companion.monad(): MaybeMonad =
+    object : MaybeMonad {}
+
+infix fun <A, B> MaybeOf<A>.binding(f: (A) -> MaybeOf<B>): Maybe<B> = Maybe.monad().run {
+    this@binding.binding(f)
 }
