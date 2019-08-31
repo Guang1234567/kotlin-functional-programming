@@ -1,11 +1,14 @@
 package com.functional.programming.ui.main
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import arrow.fx.IO
+import arrow.fx.extensions.fx
 import com.functional.programming.R
 
 class MainFragment : Fragment() {
@@ -38,7 +41,17 @@ class MainFragment : Fragment() {
             test001()
         }
 
-        viewModel_arrow_kt.apply { }
+        viewModel_arrow_kt.apply {
+            greet(
+                callBackOnUI01 = {
+                    IO.fx {
+                        Log.d(TAG, "Update UI #01 currentThread(${Thread.currentThread()}) : $it")
+                        Unit
+                    }
+                },
+                callBackOnUI02 = {Log.d(TAG, "Update UI #02 currentThread(${Thread.currentThread()}) : $it")}
+            )
+        }
     }
 
 }

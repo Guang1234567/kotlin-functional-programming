@@ -6,7 +6,8 @@ import com.functional.programming.haskell.typeclasses.Kind
 import com.functional.programming.haskell.typeclasses.Monad
 import com.functional.programming.haskell.typeclasses.Monad2
 
-
+// or `typealias ForMaybe = KClass<Maybe<Any>>` but only work for JVM platform
+// or `object ForMaybe` but `ForMaybe` can not have `companion object`
 class ForMaybe private constructor() {
     companion object
 }
@@ -29,14 +30,22 @@ sealed class Maybe<out A> : MaybeOf<A>, Monad2<ForMaybe, A> {
         override fun toString(): String = "Maybe.Just($value)"
     }
 
-    internal inline fun <B> binding(f: (A) -> MaybeOf<B>): Maybe<B> = when (this) {
-        is Nothing -> this
-        is Just -> f(value).fix()
-    }
-
     internal inline fun <B> fmap(f: (A) -> B): Maybe<B> = when (this) {
         is Nothing -> this
         is Just -> Just(f(value))
+    }
+
+    /*
+    internal inline fun <B> MaybeOf<MaybeOf<out B>>.flatten(): Maybe<B> = when (this) {
+        is Nothing -> this
+        is Just -> this.value.fix()
+    }
+    */
+
+    // `binding` 又名 `flatMap` = `fmap` + `flatten`
+    internal inline fun <B> binding(f: (A) -> MaybeOf<B>): Maybe<B> = when (this) {
+        is Nothing -> this
+        is Just -> f(value).fix() /* or `fmap(f).flatten()`*/
     }
 
     override fun <B> binding2(f: (A) -> MaybeOf<B>): Maybe<B> = when (this) {
@@ -111,3 +120,5 @@ fun Maybe.Companion.monad(): MaybeMonad =
 infix fun <A, B> MaybeOf<A>.binding(f: (A) -> MaybeOf<B>): Maybe<B> = Maybe.monad().run {
     this@binding.binding(f)
 }
+
+infix fun <A, B> Maybe<A>.binding(f: (A) -> MaybeOf<B>): Maybe<B> = (this as MaybeOf<A>).binding(f)

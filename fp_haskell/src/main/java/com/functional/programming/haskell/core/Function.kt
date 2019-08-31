@@ -8,7 +8,7 @@ class ForFunction1K private constructor() {
     companion object
 }
 
-private typealias Function1KOf<A, B> = Kind2<ForFunction1K, A, B> /* = Kind<Kind<ForFunction1K, A>, B> */
+typealias Function1KOf<A, B> = Kind2<ForFunction1K, A, B> /* = Kind<Kind<ForFunction1K, A>, B> */
 
 private typealias Function1PartialOf<A> = Kind<ForFunction1K, A>
 
@@ -23,7 +23,8 @@ private fun <A, B> Function1<A, B>.k(): Function1K<A, B> = Function1K(this)
 private fun <A, B> Function1<A, B>.kk(): Function1KOf<A, B> = Function1K(this)
 
 // 通过扩展方法, 把函数调用操作符 `()` 添加到 Function1KOf 类型上, 使之跟普通方法一样.
-operator fun <A, B> Function1KOf<A, B>.invoke(a: A): B = this.fix().f(a)
+// 注释它的原因是我用了代理模式  `data class Function1K<A, out B>(val f: Function1<A, B>) : Function1<A, B> by f`
+// operator fun <A, B> Function1KOf<A, B>.invoke(a: A): B = this.fix().f(a)
 
 data class Function1K<A, out B>(val f: Function1<A, B>) :
     Function1<A, B> by f,

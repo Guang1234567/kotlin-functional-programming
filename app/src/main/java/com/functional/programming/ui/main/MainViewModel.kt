@@ -55,7 +55,7 @@ class MainViewModel : ViewModel() {
         var result1 = listOf(1, 2, 3, 4, 5, 6, 7) fmap { it + 1 }
         Log.d(TAG, "testFunctor #3 : $result1")
 
-        // function compose   (f.g)(x) = f(g(x))
+        // function compose   (f.g)(x) = g(f(x))
         // https://learnyoua.haskell.sg/zh-cn/ch06/high-order-function#function-composition
         val foo = { x: Int -> x + 2 } fmap { x: Int -> x + 3 }
         Log.d(TAG, "testFunctor #3 : ${foo(10)}")
