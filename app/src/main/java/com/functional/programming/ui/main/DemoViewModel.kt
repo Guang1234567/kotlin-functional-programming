@@ -11,6 +11,11 @@ import arrow.fx.IO
 import arrow.fx.extensions.fx
 import arrow.fx.extensions.io.async.async
 import arrow.fx.fix
+import com.functional.programming.model.DataBaseRepo
+import com.functional.programming.model.OnDataBaseChangedListener
+import io.reactivex.Flowable
+import io.reactivex.processors.FlowableProcessor
+import io.reactivex.processors.PublishProcessor
 import io.sellmair.disposer.Disposer
 import io.sellmair.disposer.disposers
 import kotlinx.coroutines.Dispatchers
@@ -18,30 +23,47 @@ import arrow.fx.typeclasses.Disposable as FxDisposable
 import io.reactivex.disposables.Disposable as RxDisposable
 
 
-class Arrow_kt_ViewModel : ViewModel(), LifecycleOwner {
+class DemoViewModel : ViewModel(), LifecycleOwner, OnDataBaseChangedListener {
 
     companion object {
 
-        const val TAG = "Arrow_kt_ViewModel"
+        const val TAG = "DemoViewModel"
     }
+
+    val onDataBaseChangedListener: Flowable<List<String>>
+        get() = mOnDataBaseChangedListener
+
+    private val mOnDataBaseChangedListener: FlowableProcessor<List<String>> by lazy {
+        PublishProcessor.create<List<String>>()
+    }
+
+    private val mDataBaseRepo: DataBaseRepo by lazy {
+        DataBaseRepo()
+    }
+
 
     private val mLifecycleRegistry: LifecycleRegistry by lazy {
         LifecycleRegistry(this)
     }
 
+
     init {
         mLifecycleRegistry.markState(Lifecycle.State.INITIALIZED)
+        mDataBaseRepo.addListener(this@DemoViewModel)
+    }
+
+
+    override fun onCleared() {
+        super.onCleared()
+        mDataBaseRepo.removeListener(this@DemoViewModel)
+        mLifecycleRegistry.markState(Lifecycle.State.DESTROYED)
     }
 
 
     override fun getLifecycle(): Lifecycle = mLifecycleRegistry
 
-    override fun onCleared() {
-        super.onCleared()
-        mLifecycleRegistry.markState(Lifecycle.State.DESTROYED)
-    }
 
-    fun FxDisposable.disposeBy(disposer: Disposer): FxDisposable {
+    private fun FxDisposable.disposeBy(disposer: Disposer): FxDisposable {
         disposer += object : RxDisposable {
             override fun isDisposed(): Boolean = false
 
@@ -49,6 +71,28 @@ class Arrow_kt_ViewModel : ViewModel(), LifecycleOwner {
         }
         return this
     }
+
+
+    /**
+     * `OnDataBaseChangedListener`
+     */
+    override fun invoke(users: List<String>): IO<Unit> =
+        IO.fx {
+            // 切换回 UI 线程
+            continueOn(Dispatchers.Main)
+
+            // Update UI here
+            mOnDataBaseChangedListener.onNext(users)
+        }
+
+
+    fun addUser(userName: String): FxDisposable =
+        mDataBaseRepo.addUser(userName)
+            .unsafeRunAsyncCancellable { result ->
+                result.fold(
+                    { Log.e(TAG, "Boom! caused by ", it) },
+                    { println(it.toString()) })
+            }.disposeBy(disposers.onDestroy)
 
 
     suspend fun sayHello(): Int =
@@ -60,29 +104,36 @@ class Arrow_kt_ViewModel : ViewModel(), LifecycleOwner {
 
     fun greet(callBackOnUI01: (Int) -> IO<Unit>, callBackOnUI02: suspend (Int) -> Unit) {
         IO.fx {
-
             Log.d(TAG, "greet")
 
-            effect { sayHello() }
-            !effect { sayGoodBye() }
+            !effect { sayHello() }
+            effect { sayGoodBye() } // 不会执行, 要手动在前面加个 `!` 才会执行.
 
 
-            /*val result1 = !effect { sayHello() }
+            /*
+            val result1 = !effect { sayHello() }
             val result2 = !effect { sayGoodBye() }
 
             val (result3) = effect { sayHello() }
             val (result4) = effect { sayGoodBye() }
 
             val result5 = effect { sayHello() }.bind()
-            val result6 = effect { sayGoodBye() }.bind()*/
+            val result6 = effect { sayGoodBye() }.bind()
+            */
 
             continueOn(Dispatchers.Main)
-            !callBackOnUI01(123)
+
+            // 注意: 不要写类型为  `x -> IO(y)` 这种返回 `IO Monad` 的回调函数. 这只是例子而已.
+            // 下面3种等价
+            val v0 = !callBackOnUI01(123)
+            val v1 = callBackOnUI01(1234).bind()
+            val (v2) = callBackOnUI01(12345)
+
             !effect { callBackOnUI02(321) }
 
         }.unsafeRunAsyncCancellable { result ->
             result.fold(
-                { Log.e(MainFragment.TAG, "Boom! caused by ", it) },
+                { Log.e(TAG, "Boom! caused by ", it) },
                 { println(it.toString()) })
         }.disposeBy(disposers.onDestroy)
     }
@@ -99,8 +150,6 @@ class Arrow_kt_ViewModel : ViewModel(), LifecycleOwner {
                 continueOn(Dispatchers.Default)
                 Thread.currentThread().name
             }.fix().unsafeRunSync()
-
-            println(result)
         }
 
 }

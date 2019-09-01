@@ -7,9 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import arrow.fx.IO
-import arrow.fx.extensions.fx
 import com.functional.programming.R
+import io.sellmair.disposer.disposeBy
+import io.sellmair.disposer.disposers
 
 class MainFragment : Fragment() {
 
@@ -23,8 +23,8 @@ class MainFragment : Fragment() {
         ViewModelProviders.of(this).get(MainViewModel::class.java)
     }
 
-    private val viewModel_arrow_kt: Arrow_kt_ViewModel by lazy {
-        ViewModelProviders.of(this).get(Arrow_kt_ViewModel::class.java)
+    private val demoViewModel: DemoViewModel by lazy {
+        ViewModelProviders.of(this).get(DemoViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -41,17 +41,32 @@ class MainFragment : Fragment() {
             test001()
         }
 
-        viewModel_arrow_kt.apply {
-            greet(
+        demoViewModel.apply {
+            /*greet(
                 callBackOnUI01 = {
                     IO.fx {
                         Log.d(TAG, "Update UI #01 currentThread(${Thread.currentThread()}) : $it")
                         Unit
                     }
                 },
-                callBackOnUI02 = {Log.d(TAG, "Update UI #02 currentThread(${Thread.currentThread()}) : $it")}
-            )
+                callBackOnUI02 = {
+                    Log.d(
+                        TAG,
+                        "Update UI #02 currentThread(${Thread.currentThread()}) : $it"
+                    )
+                }
+            )*/
+
+            onDataBaseChangedListener
+                .subscribe {
+                    Log.d(
+                        TAG,
+                        "Update UI #02 currentThread(${Thread.currentThread()}) : $it"
+                    )
+                }
+                .disposeBy(disposers.onDestroy)
+
+            addUser("小李子")
         }
     }
-
 }
