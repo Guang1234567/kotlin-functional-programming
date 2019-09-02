@@ -3,8 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 android {
-    compileSdkVersion 28
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
 
+    compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 19
@@ -42,6 +46,7 @@ dependencies {
 
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.2"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.2"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.2.2"
 
@@ -60,39 +65,38 @@ dependencies {
     api 'io.sellmair:disposer:2.0.0'
 
 
+    /*
     def arrow_version = "0.10.0-SNAPSHOT"
     api "io.arrow-kt:arrow-fx:$arrow_version"
     api "io.arrow-kt:arrow-optics:$arrow_version"
     api "io.arrow-kt:arrow-syntax:$arrow_version"
     kapt "io.arrow-kt:arrow-meta:$arrow_version"
+    */
 
 
-    /*def arrow_version = "0.8.+"
-    api "io.arrow-kt:arrow-core-data:$arrow_version"
-    api "io.arrow-kt:arrow-core-extensions:$arrow_version"
+    def arrow_version = "0.8.2"
+    api "io.arrow-kt:arrow-core:$arrow_version"
     api "io.arrow-kt:arrow-syntax:$arrow_version"
     api "io.arrow-kt:arrow-typeclasses:$arrow_version"
-    api "io.arrow-kt:arrow-extras-data:$arrow_version"
-    api "io.arrow-kt:arrow-extras-extensions:$arrow_version"
-    kapt    "io.arrow-kt:arrow-meta:$arrow_version"
+    api "io.arrow-kt:arrow-data:$arrow_version"
+    api "io.arrow-kt:arrow-instances-core:$arrow_version"
+    api "io.arrow-kt:arrow-instances-data:$arrow_version"
+    kapt    "io.arrow-kt:arrow-annotations-processor:$arrow_version"
 
-    api "io.arrow-kt:arrow-query-language:$arrow_version" //optional
-    api "io.arrow-kt:arrow-free-data:$arrow_version" //optional
-    api "io.arrow-kt:arrow-free-extensions:$arrow_version" //optional
+    api "io.arrow-kt:arrow-free:$arrow_version" //optional
+    api "io.arrow-kt:arrow-instances-free:$arrow_version" //optional
     api "io.arrow-kt:arrow-mtl:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-data:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-extensions:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-io-extensions:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-rx2-data:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-rx2-extensions:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-reactor-data:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-reactor-extensions:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-kotlinx-coroutines-data:$arrow_version" //optional
-    api "io.arrow-kt:arrow-effects-kotlinx-coroutines-extensions:$arrow_version" //optional
+    api "io.arrow-kt:arrow-effects:$arrow_version" //optional
+    api "io.arrow-kt:arrow-effects-instances:$arrow_version" //optional
+    api "io.arrow-kt:arrow-effects-rx2:$arrow_version" //optional
+    api "io.arrow-kt:arrow-effects-rx2-instances:$arrow_version" //optional
+    api "io.arrow-kt:arrow-effects-reactor:$arrow_version" //optional
+    api "io.arrow-kt:arrow-effects-reactor-instances:$arrow_version" //optional
+    api "io.arrow-kt:arrow-effects-kotlinx-coroutines:$arrow_version" //optional
+    api "io.arrow-kt:arrow-effects-kotlinx-coroutines-instances:$arrow_version" //optional
     api "io.arrow-kt:arrow-optics:$arrow_version" //optional
     api "io.arrow-kt:arrow-generic:$arrow_version" //optional
-    api "io.arrow-kt:arrow-recursion-data:$arrow_version" //optional
-    api "io.arrow-kt:arrow-recursion-extensions:$arrow_version" //optional
-    api "io.arrow-kt:arrow-query-language:$arrow_version" //optional
-    api "io.arrow-kt:arrow-integration-retrofit-adapter:$arrow_version"*/
+    api "io.arrow-kt:arrow-recursion:$arrow_version" //optional
+    api "io.arrow-kt:arrow-instances-recursion:$arrow_version" //optional
+    api "io.arrow-kt:arrow-integration-retrofit-adapter:$arrow_version" //optional
 }

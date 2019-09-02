@@ -2,6 +2,7 @@ package com.functional.programming.ui.main
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.functional.programming.haskell.core.FutureK
 import com.functional.programming.haskell.core.Maybe
 import com.functional.programming.haskell.core.binding
 import com.functional.programming.haskell.core.eq
@@ -9,6 +10,10 @@ import com.functional.programming.haskell.core.eqv
 import com.functional.programming.haskell.core.fmap
 import com.functional.programming.haskell.core.fmapFlip
 import com.functional.programming.haskell.core.neqv
+import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.rx2.asCoroutineDispatcher
+import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
@@ -43,7 +48,33 @@ class MainViewModel : ViewModel() {
 
         result = Maybe.Just(20) binding2 ::half
         Log.d(TAG, "testMonad #3 : $result")
+
+        val source: FutureK<String> = FutureK {
+            Log.d(TAG, "testMonad #4 ${Thread.currentThread()}")
+            Thread.sleep(2000)
+            "start source"
+        }
+
+        val finalResult = (source binding ::doOp1 binding ::doOp2).runSync()
+        Log.d(TAG, "testMonad #7 : $finalResult")
     }
+
+    private fun doOp1(fromSource: String): FutureK<String> =
+        FutureK(Schedulers.single().asCoroutineDispatcher()) {
+            Log.d(TAG, "testMonad #5 ${Thread.currentThread()}  :  上一步操作的结果 $fromSource")
+            Thread.sleep(3000)
+            "done op1"
+        }
+
+    private fun doOp2(fromOp1: String): FutureK<String> =
+        FutureK(Schedulers.newThread().asCoroutineDispatcher()) {
+            Log.d(TAG, "testMonad #6 ${Thread.currentThread()}  :  上一步操作的结果 $fromOp1")
+            Thread.sleep(3000)
+            // 内部又切换了一次线程
+            withContext(Dispatchers.Default) {
+                "done op2"
+            }
+        }
 
     fun testFunctor() {
         var result = Maybe.Just(20) fmap { it + 1 } fmap { it > 20 }

@@ -1,8 +1,8 @@
 package com.functional.programming.model
 
 import android.util.Log
-import arrow.fx.IO
-import arrow.fx.extensions.fx
+import arrow.effects.IO
+import arrow.effects.instances.io.async.async
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.rx2.asCoroutineDispatcher
@@ -41,29 +41,30 @@ class DataBaseRepo {
     }
 
     fun addUser(userName: String): IO<Boolean> =
-        IO.fx {
+        IO.async().run {
+            binding {
+                Log.d(TAG, "# addUser : $userName")
 
-            Log.d(TAG, "# addUser : $userName")
+                // 本来这里应该用 `Dispatcher.IO`,
+                // 但 `mUserList`  不是线程安全的, 故还是用回 `single()`
+                // 换成真实数据库就可用回 `IO()`
+                continueOn(Schedulers.single().asCoroutineDispatcher())
 
-            // 本来这里应该用 `Dispatcher.IO`,
-            // 但 `mUserList`  不是线程安全的, 故还是用回 `single()`
-            // 换成真实数据库就可用回 `IO()`
-            continueOn(Schedulers.single().asCoroutineDispatcher())
+                val result = mUserList.add(userName)
 
-            val result = mUserList.add(userName)
-
-            if (result) {
-                try {
-                    continueOn(Dispatchers.Main)
-                    // notify `controller` that `Model` have been changed
-                    mListeners.forEach {
-                        // or `it.OnDataBaseChangedListener().bind()`
-                        !it(mUserList) // 注意前面有个 `!`
+                if (result) {
+                    try {
+                        continueOn(Dispatchers.Main)
+                        // notify `controller` that `Model` have been changed
+                        mListeners.forEach {
+                            // or `bind {it.OnDataBaseChangedListener()}`
+                            it(mUserList).bind() // 注意后面有个 `.bind()`
+                        }
+                    } catch (e: Throwable) {
+                        Log.e(TAG, "# addUser", e)
                     }
-                } catch (e: Throwable) {
-                    Log.e(TAG, "# addUser", e)
                 }
+                result
             }
-            result
-        }
+        } as IO<Boolean>
 }
