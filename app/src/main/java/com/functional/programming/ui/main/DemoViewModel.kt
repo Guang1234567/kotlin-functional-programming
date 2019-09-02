@@ -6,7 +6,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModel
 import arrow.core.Right
-import arrow.effects.DeferredK
 import arrow.effects.ForIO
 import arrow.effects.IO
 import arrow.effects.fix
@@ -65,7 +64,7 @@ class DemoViewModel : ViewModel(), LifecycleOwner, OnDataBaseChangedListener {
         mDataBaseRepo.removeListener(this@DemoViewModel)
         mLifecycleRegistry.markState(Lifecycle.State.DESTROYED)
 
-        val deferredK = DeferredK { throw RuntimeException("BOOM!") }
+        //val deferredK = DeferredK { throw RuntimeException("BOOM!") }.handleError { listOf<Int>() }
     }
 
 

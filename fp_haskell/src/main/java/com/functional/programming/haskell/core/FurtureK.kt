@@ -6,7 +6,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.CoroutineContext
 
@@ -56,6 +58,21 @@ class FutureK<out A> internal constructor(
     fun runSync(): A = runBlocking {
         value.await()
     }
+
+    fun runASync(
+        ctx: CoroutineContext = Dispatchers.Default,
+        scope: CoroutineScope = CoroutineScope(ctx),
+        start: CoroutineStart = CoroutineStart.LAZY,
+        onError: suspend (Throwable) -> Unit,
+        onCompleted: suspend (result: A) -> Unit
+    ): Job =
+        scope.launch(ctx, start) {
+            try {
+                onCompleted(value.await())
+            } catch (e: Throwable) {
+                onError(e)
+            }
+        }
 }
 
 

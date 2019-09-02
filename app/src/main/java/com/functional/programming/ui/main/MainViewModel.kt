@@ -12,6 +12,7 @@ import com.functional.programming.haskell.core.fmapFlip
 import com.functional.programming.haskell.core.neqv
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.rx2.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -55,25 +56,44 @@ class MainViewModel : ViewModel() {
             "start source"
         }
 
-        val finalResult = (source binding ::doOp1 binding ::doOp2).runSync()
-        Log.d(TAG, "testMonad #7 : $finalResult")
+        val finalResult: FutureK<String> =
+            (source binding ::doOp1 binding ::doOp2 binding ::doOp3 binding ::doOp4)
+        try {
+            Log.d(TAG, "testMonad #9 : ${finalResult.runSync()}")
+        } catch (e: Throwable) {
+            Log.e(TAG, "#testMonad : ", e)
+        }
     }
 
     private fun doOp1(fromSource: String): FutureK<String> =
         FutureK(Schedulers.single().asCoroutineDispatcher()) {
             Log.d(TAG, "testMonad #5 ${Thread.currentThread()}  :  上一步操作的结果 $fromSource")
-            Thread.sleep(3000)
+            delay(3000)
             "done op1"
         }
 
     private fun doOp2(fromOp1: String): FutureK<String> =
         FutureK(Schedulers.newThread().asCoroutineDispatcher()) {
             Log.d(TAG, "testMonad #6 ${Thread.currentThread()}  :  上一步操作的结果 $fromOp1")
-            Thread.sleep(3000)
+            delay(3000)
             // 内部又切换了一次线程
             withContext(Dispatchers.Default) {
                 "done op2"
             }
+        }
+
+    private fun doOp3(fromOp2: String): FutureK<String> =
+        FutureK(Schedulers.newThread().asCoroutineDispatcher()) {
+            Log.d(TAG, "testMonad #7 ${Thread.currentThread()}  :  上一步操作的结果 $fromOp2")
+
+            Log.e(TAG, "即将要崩溃了!!!!")
+            throw RuntimeException("BOOM!")
+        }
+
+    private fun doOp4(fromOp3: String): FutureK<String> =
+        FutureK(Schedulers.newThread().asCoroutineDispatcher()) {
+            Log.d(TAG, "testMonad #8 ${Thread.currentThread()}  :  上一步操作的结果 $fromOp3")
+            "永不会执行"
         }
 
     fun testFunctor() {
