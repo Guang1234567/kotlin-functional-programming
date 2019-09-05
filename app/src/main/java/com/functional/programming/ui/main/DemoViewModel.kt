@@ -5,20 +5,34 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModel
+import arrow.Kind
 import arrow.core.Right
+import arrow.effects.FlowableK
+import arrow.effects.ForFlowableK
 import arrow.effects.ForIO
 import arrow.effects.IO
+import arrow.effects.ObservableK
 import arrow.effects.fix
+import arrow.effects.flowablek.monad.monad
 import arrow.effects.instances.io.async.async
+import arrow.effects.k
+import arrow.effects.observablek.async.async
+import arrow.effects.value
+import arrow.free.bindingStackSafe
+import arrow.free.run
 import arrow.typeclasses.MonadContinuation
 import com.functional.programming.model.DataBaseRepo
 import com.functional.programming.model.OnDataBaseChangedListener
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.processors.FlowableProcessor
 import io.reactivex.processors.PublishProcessor
 import io.sellmair.disposer.Disposer
 import io.sellmair.disposer.disposers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import arrow.effects.typeclasses.Disposable as FxDisposable
 import io.reactivex.disposables.Disposable as RxDisposable
 
@@ -63,9 +77,9 @@ class DemoViewModel : ViewModel(), LifecycleOwner, OnDataBaseChangedListener {
         super.onCleared()
         mDataBaseRepo.removeListener(this@DemoViewModel)
         mLifecycleRegistry.markState(Lifecycle.State.DESTROYED)
-
-        //val deferredK = DeferredK { throw RuntimeException("BOOM!") }.handleError { listOf<Int>() }
     }
+
+    fun getSongUrlAsync(): Observable<Int> = Observable.just(1)
 
 
     override fun getLifecycle(): Lifecycle = mLifecycleRegistry
@@ -92,8 +106,8 @@ class DemoViewModel : ViewModel(), LifecycleOwner, OnDataBaseChangedListener {
 
                 // Update UI here
                 mOnDataBaseChangedListener.onNext(users)
-            }
-        }.fix()
+            }.fix()
+        }
 
 
     fun addUser(userName: String): FxDisposable =

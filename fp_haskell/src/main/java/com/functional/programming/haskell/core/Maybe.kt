@@ -52,6 +52,11 @@ sealed class Maybe<out A> : MaybeOf<A>, Monad2<ForMaybe, A> {
         is Nothing -> this
         is Just -> f(value).fix()
     }
+
+    internal inline fun bind(): A? = when (this) {
+        is Nothing -> null
+        is Just -> value
+    }
 }
 
 
@@ -111,7 +116,11 @@ infix fun <A, B> ((A) -> B).fmapFlip(maybe: MaybeOf<A>): Maybe<B> = maybe.fmap(t
 //------------------------------
 
 interface MaybeMonad : Monad<ForMaybe> {
+    override fun <A> just(value: A): Maybe<A> = Maybe.Just(value)
+
     override fun <A, B> MaybeOf<A>.binding(f: (A) -> MaybeOf<B>): Maybe<B> = fix().binding(f)
+
+    override suspend fun <A> bind(m: MaybeOf<A>): A? = m.fix().bind()
 }
 
 fun Maybe.Companion.monad(): MaybeMonad =

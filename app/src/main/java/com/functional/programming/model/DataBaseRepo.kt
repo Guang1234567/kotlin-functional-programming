@@ -42,7 +42,7 @@ class DataBaseRepo {
 
     fun addUser(userName: String): IO<Boolean> =
         IO.async().run {
-            binding {
+            bindingCatch {
                 Log.d(TAG, "# addUser : $userName")
 
                 // 本来这里应该用 `Dispatcher.IO`,

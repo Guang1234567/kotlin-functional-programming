@@ -1,15 +1,12 @@
 package com.functional.programming.ui.main
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.functional.programming.R
-import io.sellmair.disposer.disposeBy
-import io.sellmair.disposer.disposers
 
 class MainFragment : Fragment() {
 
@@ -41,8 +38,8 @@ class MainFragment : Fragment() {
             test001()
         }
 
-        demoViewModel.apply {
-            /*greet(
+        /*demoViewModel.apply {
+            *//*greet(
                 callBackOnUI01 = {
                     IO.fx {
                         Log.d(TAG, "Update UI #01 currentThread(${Thread.currentThread()}) : $it")
@@ -55,7 +52,7 @@ class MainFragment : Fragment() {
                         "Update UI #02 currentThread(${Thread.currentThread()}) : $it"
                     )
                 }
-            )*/
+            )*//*
 
             onDataBaseChangedListener
                 .subscribe {
@@ -67,6 +64,6 @@ class MainFragment : Fragment() {
                 .disposeBy(disposers.onDestroy)
 
             addUser("小李子")
-        }
+        }*/
     }
 }

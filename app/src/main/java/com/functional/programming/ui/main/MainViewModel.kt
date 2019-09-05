@@ -9,6 +9,8 @@ import com.functional.programming.haskell.core.eq
 import com.functional.programming.haskell.core.eqv
 import com.functional.programming.haskell.core.fmap
 import com.functional.programming.haskell.core.fmapFlip
+import com.functional.programming.haskell.core.monadComprehensions
+import com.functional.programming.haskell.core.monadComprehensions2
 import com.functional.programming.haskell.core.neqv
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
@@ -27,9 +29,11 @@ class MainViewModel : ViewModel() {
     }
 
     fun test001() {
-        testMonad()
-        testEq()
-        testFunctor()
+        //testMonad()
+        //testEq()
+        //testFunctor()
+
+        testMonadComprehensions()
     }
 
 
@@ -134,4 +138,41 @@ class MainViewModel : ViewModel() {
         result = Maybe.Nothing.neqv(Int.eq(), Maybe.Just(20))
         Log.d(TAG, "testEq #7 : $result")
     }
+
+
+    fun testMonadComprehensions() {
+        Thread(Runnable {
+            val returnMonadInstance = doOp11()
+
+            /*val returnMonadInstance =
+                FutureK.monadComprehensions2("MonadComprehensions-testMonadComprehensions") {
+                    val result: String = FutureK {
+                        "22222sfsf222"
+                    }.bind()
+
+                    Log.d(TAG, "monadComprehensions2: $result   ${Thread.currentThread()}")
+                    result
+                }*/
+
+            Thread.sleep(3000)
+
+            Log.d(TAG, "testMonadComprehensions  returnMonadInstance: $returnMonadInstance")
+            val result = returnMonadInstance.runSync()
+            Log.d(TAG, "testMonadComprehensions : $result")
+        }, "Thread 1234567").start()
+    }
+
+    private fun doOp11(): FutureK<String> =
+        FutureK.monadComprehensions("MonadComprehensions-doOp11") {
+            FutureK {
+                "done op11"
+            }.bind()
+        }
+
+    private fun pureFunc(input: Int): Int = input + 1
+
+    private fun doOp12(fromOp11: String): FutureK<String> =
+        FutureK.monadComprehensions("MonadComprehensions-doOp22") {
+            "$fromOp11 done op12"
+        }
 }
